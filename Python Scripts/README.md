@@ -1,4 +1,4 @@
-# Python scripts overview 
+# Python Scripts Overview 
 
 **Analysis**: Contains all scripts that deal with analysis of simulation results. 
 
