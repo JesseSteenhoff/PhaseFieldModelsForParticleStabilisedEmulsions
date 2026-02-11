@@ -1,5 +1,7 @@
 # Python Script Overview: Analysis 
 
+**Morphological_Analysis_PickeringEmulsions**: Analyses the morphologies of simulated 2D Pickering emulsions during their formation. It calculates profiles of the number of droplets, in addition to the average droplet diameter. Finally, it calculates the distributions of the droplet diameter in the system and visualises them as histograms. Requires ... as input data. 
+
 **Morphology_Analysis_OffCritical**: Phase-field simulation that tracks the number and average diameter of droplets (Pickering emulsio) formed during off-critical phase separation. 
 
 **Morphology_Analysis_Critical**: Phase-field simulation that tracks the characteristic length of the labyrinthine structure (bijel) formed during critical phase separation. 
