@@ -29,7 +29,7 @@ class Liquid:
     #Simulation timestep 
     dt=0.001
     
-    #Stencil (grid) spacing  
+    #Stencil spacing  
     h=0.5
     
     #Initialisation method that creates a field of composition phi0, including some random thermal noise
@@ -84,15 +84,24 @@ class Liquid:
     #Method that evolves the order parameter field according to the nondimensionalised Cahn-Hilliard equation 
     def Propagate(self,phi,psi):
         
-        #Calculates the functional derivative of the free energy (chemical potential) for the liquid
+        #Lattice dimensions 
+        Nx=len(phi)
+        
+        # Calculates the functional derivative of the free energy (chemical potential, lattice points) for the liquid
         Mu=np.log(phi/(1-phi))+self.chi*(1-2*phi)-(1-self.alpha*psi)*self.Calc_Laplacian(phi)+self.alpha*(self.Calc_Gradient(phi)[0]*self.Calc_Gradient(psi)[0])
         
-        #Update the order parameter field (Euler Forward)
-        self.phi+=(self.Calc_Laplacian(Mu))*self.dt
-    
+        #Calculate fluxes at lattice faces
+        J=np.zeros(Nx+1) #No-Flux boundary conditions!
+        J[1:Nx]=-(Mu[1:Nx]-Mu[0:Nx-1])/self.h
+        
+        #Approximate divergence of fluxes at lattice points (finite-difference)
+        DivJ=(J[1:Nx+1]-J[0:Nx])/self.h
+        
+        # Update order parameter field (Euler Forward)
+        self.phi += -DivJ*self.dt
+        
         return self.phi
 
-#The Colloid class describes the behaviour of surface-active nanoparticles in the system
 class Colloid(Liquid):
     
     #Relative mobility of the colloids
@@ -110,15 +119,25 @@ class Colloid(Liquid):
     #Method that propagates the colloid order parameter field in time according to the nondimensionalised Cahn-Hilliard equation 
     def Propagate(self,psi,phi):
         
+        #Lattice dimensions 
+        Nx=len(psi)
+        
         #Calculate the gradient of the liquid field 
         Gradx=self.Calc_Gradient(phi)
         
-        #Calculates the functional derivative of the free energy (chemical potential) for the colloids (ideal gas approximation for bulk contributions)
+        #Calculates the functional derivative of the free energy (chemical potential) for the colloids
         Mu=np.log(psi)-self.alpha/2*(np.abs(Gradx)**2)
         
-        #Update order parameter (Euler Forward)
-        self.psi+=(self.Mc*self.Calc_Laplacian(Mu))*self.dt
-    
+        #Calculate fluxes at lattice faces
+        J=np.zeros(Nx+1) #No-Flux boundary conditions!
+        J[1:Nx]=-self.Mc*(Mu[1:Nx]-Mu[0:Nx-1])/self.h
+        
+        #Approximate divergence of fluxes at lattice points (finite-difference)
+        DivJ=(J[1:Nx+1]-J[0:Nx])/self.h
+        
+        # Update order parameter field (Euler Forward)
+        self.psi += -DivJ*self.dt
+        
         return self.psi
     
 
@@ -159,7 +178,9 @@ for alpha in alpha_range:
     Colloids=Colloid(Dimensions,psi0,alpha)         
     
     #Total number of simulation steps 
-    N=500000                     
+    N=500000
+    #Simulation time
+    t_sim=N*Oil.dt                     
     
     #List with the effective gradient energy parameter
     k_eff_list=[]
@@ -195,8 +216,8 @@ for alpha in alpha_range:
         Colloids.Propagate(psi,phi)
         
         #Check progress 
-        if n%(N/10)==0:                
-            print(str(100*n/N)+'% complete')
+        if ((n+1)*Oil.dt)%(t_sim/10)==0:
+            print(str(100*(n+1)/N)+'% complete')
             
     
     #End-point for determining computation time
@@ -220,7 +241,7 @@ for alpha in alpha_range:
     DeltaPsi=Colloids.psi[9]-Colloids.psi[0]
     DeltaPsi_storage.append(DeltaPsi)
 
-#%%Plot liquid and colloid profiles for different values of the attachment parameter 
+#%%Plot liquid and colloid profiles for different alpha-values 
 
 #Select desired colours from standard colour cycle
 selection=[0,1,3]
@@ -261,7 +282,7 @@ axes[1].set_ylim(0.40,0.90)
 #Construct the legend
 fig.legend(Handles,alpha_range,handler_map={tuple: HandlerTuple(ndivide=None)},fontsize=9,loc=(0.755,0.635),title=r'$\tilde{\alpha}$')
 
-#%% For selected attachment parameters, visualise the evolution of the interfacial tension and the interfacial excess over time 
+#%% For selected alpha values, visualise the evolution of the interfacial tension and the interfacial excess over time 
 
 #Find corresponding profiles of the interfacial tension and interfacial excess 
 sigmas=np.array(sigma_storage)
