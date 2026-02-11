@@ -18,7 +18,7 @@ plt.rcParams['figure.dpi'] = 300
 plt.style.use(['science','no-latex'])
 
 #Import path 
-Path='<Path to Colloid_Mobility_Variation Folder'
+Path='<Path to Profiles_Mobility_Variation_Colloids Folder'
 
 #Method that analyses the morphology (Find first moment of radially averaged power spectrum)
 def Analyse_Morphology(Image):
@@ -138,5 +138,6 @@ for i in range(len(Lcs_av))[::-1]:
 
 
 plt.legend(bbox_to_anchor=(1.05, 1), borderaxespad=0.,title=r'$\tilde{M}_{\psi}^0$')
+
 
 
