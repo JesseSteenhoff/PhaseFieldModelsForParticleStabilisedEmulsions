@@ -1,6 +1,6 @@
 # Python Script Overview: Phase-Field Simulations
 
-**CahnHilliard_Colloids_1D**: Phase-field simulations that solve coupled Cahn-Hilliard equations of liquids and colloids for a 1D interface. 
+**CahnHilliard_Colloids_1D**: Phase-field simulations that solve coupled Cahn-Hilliard equations of liquids and colloids for a 1D interface. It also calculates tracks both the interfacial tension and excess over the course of the simulation. 
 
 **DynamicEquations_1D**: Phase-field simulations that solve dynamic equations of liquids and colloids for a 1D interface. 
 
