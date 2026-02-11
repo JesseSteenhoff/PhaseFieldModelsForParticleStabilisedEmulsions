@@ -16,7 +16,7 @@
 
 **Profiles_Depth_STrIPS**: Analyses the morphology of simulated STrIPS bijels to generate depth profiles of the domain size. Requires [Profiles_Domains_STrIPS](../../Data/Profiles_Domains_STrIPS/) as input data. 
 
-**Analysis_Coarsening_Dynamics**: Analyses the morphologies resulting from critical and off-critical liquid phase separation to obtain the respective coarsening exponents. Requires [Profiles_OstwaldRipening_Critical](../../Data/Profiles_OstwaldRipening_Critical/) and [Profiles_OstwaldRipening_Offcritical](../../Data/Profiles_OstwaldRipening_Offcritical/)  as input data. 
+**Analysis_Coarsening_Dynamics**: Analyses the morphologies resulting from critical and off-critical liquid phase separation to obtain the respective coarsening exponents through a power-law. Requires [Profiles_OstwaldRipening_Critical](../../Data/Profiles_OstwaldRipening_Critical/) and [Profiles_OstwaldRipening_Offcritical](../../Data/Profiles_OstwaldRipening_Offcritical/)  as input data. 
 
 
 
