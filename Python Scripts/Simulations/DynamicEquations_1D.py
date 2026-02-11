@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Apr 14 11:53:40 2025
+Created on Mon Jan 26 20:34:51 2026
 
 @author: J.M. Steenhoff
 """
@@ -89,18 +89,36 @@ class Liquid:
         if self.jamming == True:
             M = 1/2*(1-np.tanh((psi-psic)*n))
         else:
-            M = 1
+            M = 1*np.ones(len(psi))
 
         return M
 
     # Method that evolves the order parameter field according to the dynamic equations 
     def Propagate(self, phi, psi, psic, n):
-
-        # Calculates the functional derivative of the free energy (chemical potential) for the liquid
+        
+        #Lattice dimensions 
+        Nx=len(phi)
+        
+        # Calculate the mobility of the liquid at lattice points
+        M = self.Calc_Mobility(psi, psic, n)
+        
+        # Calculate mobility at lattice faces
+        M_faces=np.zeros(Nx+1)
+        #Harmonic mean 
+        M_faces[1:Nx]=2/(1/M[1:Nx]+1/M[0:Nx-1])
+      
+        # Calculates the functional derivative of the free energy (chemical potential, lattice points) for the liquid
         Mu = np.log(phi/(1-phi))+self.chi*(1-2*phi)-self.Calc_Laplacian(phi)
-
-        # Update the order parameter field (Euler Forward)
-        self.phi += (self.Calc_Mobility(psi, psic, n)*self.Calc_Laplacian(Mu))*self.dt
+        
+        #Calculate fluxes at lattice faces
+        J=np.zeros(Nx+1) #No-Flux boundary conditions!
+        J[1:Nx]=-M_faces[1:Nx]*(Mu[1:Nx]-Mu[0:Nx-1])/self.h
+        
+        #Approximate divergence of fluxes at lattice points (finite-difference)
+        DivJ=(J[1:Nx+1]-J[0:Nx])/self.h
+        
+        # Update order parameter field (Euler Forward)
+        self.phi += -DivJ*self.dt
 
         return self.phi
 
@@ -124,25 +142,40 @@ class Colloid(Liquid):
         if self.jamming == True:
             MC = self.Mc*1/2*(1-np.tanh((psi-psic)*n))
         else:
-            MC = self.Mc
+            MC = self.Mc*np.ones(len(psi))
 
         return MC
-
-    # Method that propagates the colloid order parameter field in time according to the dynamic equations
+ 
+    # Method that propagates the colloid order parameter field in time according to the dynamic equations (Finite-Volume method)
     def Propagate(self, psi, phi, psic, n):
-
+        
+        #Lattice dimensions 
+        Nx=len(psi)
+        
+        # Calculate the mobility of the colloids at lattice points
+        MC = self.Calc_Mobility_C(psi, psic, n)
+        
+        # Calculate mobility at lattice faces
+        MC_faces=np.zeros(Nx+1)
+        #Harmonic mean 
+        MC_faces[1:Nx]=2/(1/MC[1:Nx]+1/MC[0:Nx-1])
+        
         # Calculate the gradient of the liquid field
         Gradx = self.Calc_Gradient(phi)
-
-        # Calculate the mobility of the colloids
-        MC = self.Calc_Mobility_C(psi, psic, n)
-
-        # Calculates the functional derivative of the free energy (chemical potential) for the colloids (ideal gas approximation for bulk contributions)
+        
+        # Calculates the functional derivative of the free energy (chemical potential, lattice points) for the colloids (ideal gas approximation for bulk contributions)
         Mu = np.log(psi)-self.alpha/2*(Gradx**2)
-
+        
+        #Calculate fluxes at lattice faces
+        J=np.zeros(Nx+1) #No-Flux boundary conditions!
+        J[1:Nx]=-MC_faces[1:Nx]*(Mu[1:Nx]-Mu[0:Nx-1])/self.h
+        
+        #Approximate divergence of fluxes at lattice points (finite-difference)
+        DivJ=(J[1:Nx+1]-J[0:Nx])/self.h
+        
         # Update order parameter field (Euler Forward)
-        self.psi += (MC*self.Calc_Laplacian(Mu))*self.dt
-
+        self.psi += -DivJ*self.dt
+        
         return self.psi
 
 
@@ -151,25 +184,28 @@ class Colloid(Liquid):
 # Simulation dimensions
 Dimensions = 20
 
-# Initial composition (liquids, colloids)
+# Initial composition
 phi0 = 0.50
 psi0 = 0.50
 
 # Threshold value for colloid jamming
 psi_c = 0.95
 # ''Sharpness'' of colloid mobility function
-s = 50
+s = 75
 
 # Attachment parameters
 alpha_range = [0, 5, 20]
 
-# Lists with liquid and colloid profiles (non-jamming)
+# Lists with liquid and colloid profiles (Non-jammed)
 Liquid_list = []
 Colloid_list = []
 
-# Lists with liquid and colloid profiles (jamming)
+# Lists with liquid and colloid profiles (jammed)
 Liquid_list_jammed = []
 Colloid_list_jammed = []
+
+# List with average colloid content (jammed)
+psi_av_list=[]
 
 
 for alpha in alpha_range:
@@ -188,32 +224,38 @@ for alpha in alpha_range:
     # Initialise the colloid field
     Colloids = Colloid(Dimensions, psi0, alpha, jamming=False)
     Colloids_jammed = Colloid(Dimensions, psi0, alpha, jamming=True)
+    
+    #Local list with average colloid content 
+    psi_av=[]
 
     # Simulated time
-    t_sim = 750
-    
+    t_sim = 2000
     # Total number of simulation steps
     N = int(t_sim/Oil.dt)
 
     # Start-point for determining computation time
     t0 = process_time()
 
-    for n in range(N+1):
+    for n in range(N):
 
         # Create local copies of the liquid and colloid field
         phi, psi = np.copy(Oil.phi), np.copy(Colloids.psi)
-        phi_jammed, psi_jammed = np.copy(Oil_jammed.phi), np.copy(Colloids_jammed.psi)
+        phi_jammed, psi_jammed = np.copy(
+            Oil_jammed.phi), np.copy(Colloids_jammed.psi)
 
-        # Propagate the fields in time via the dynamic equations
+        # Propagate the fields in time via the Cahn-Hilliard equation
         Oil.Propagate(phi, psi, psi_c, s)
         Colloids.Propagate(psi, phi, psi_c, s)
 
         Oil_jammed.Propagate(phi_jammed, psi_jammed, psi_c, s)
         Colloids_jammed.Propagate(psi_jammed, phi_jammed, psi_c, s)
+        
+        #Calculate and append average colloid content
+        psi_av.append(np.average(np.copy(Colloids_jammed.psi)))
 
-        # Check progress at 10% intervals
-        if n % (N/10) == 0:
-            print(str(100*n/N)+'% complete')
+        # Check system progress at 10% intervals
+        if ((n+1)*Oil.dt)%(t_sim/10)==0:
+            print(str(100*(n+1)/N)+'% complete')
 
     # End-point for determining computation time
     t1 = process_time()
@@ -227,9 +269,28 @@ for alpha in alpha_range:
 
     Liquid_list_jammed.append(Oil_jammed.phi)
     Colloid_list_jammed.append(Colloids_jammed.psi)
+    
+    #Append average colloid content
+    psi_av_list.append(psi_av)
 
 
-#%%Plot liquid and colloid profiles for different values of the attachment parameter
+#%% Visualise evolution of colloid content over time 
+
+t_range=np.arange(Oil.dt,t_sim+Oil.dt,Oil.dt)
+
+plt.figure()
+plt.minorticks_on()
+plt.ylabel(r'Av. Nanoparticle Content, $\psi_{av}$')
+plt.xlabel(r'Simulated time, $\tilde{t}$')
+
+for i in range(len(psi_av_list)):
+    plt.plot(t_range,psi_av_list[i],label=str(alpha_range[i]))
+
+plt.legend(title=r'$\alpha$')
+
+plt.ylim(0.499,0.501)
+
+# %%Plot liquid and colloid profiles for different alpha-values
 
 # Select desired colours from standard colour cycle
 selection = [0, 1, 3]
@@ -256,17 +317,21 @@ axes[1].set_ylabel('Nanoparticle, $\psi$')
 axes[2].set_ylabel('Nanoparticle, $\psi$')
 
 plt.minorticks_on()
-plt.subplots_adjust(hspace=0.03)
+plt.subplots_adjust(hspace=0.04)
 
 # Storage for label handles
 Handles = []
 
+#Mask for plotting 
+B=2
+E=Dimensions-B
+
 for i in range(len(alpha_range)):
-    p1, = axes[0].plot(x[5:15], Liquid_list[i][5:15], marker='^',
+    p1, = axes[0].plot(x[B:E], Liquid_list[i][B:E], marker='^',
                        linestyle='--', markersize=3, color=colors[i])
-    p2, = axes[1].plot(x[5:15], Colloid_list[i][5:15], marker='o',
+    p2, = axes[1].plot(x[B:E], Colloid_list[i][B:E], marker='o',
                        linestyle='--', markersize=3, color=colors[i])
-    p3, = axes[2].plot(x[5:15], Colloid_list_jammed[i][5:15],
+    p3, = axes[2].plot(x[B:E], Colloid_list_jammed[i][B:E],
                        marker='o', linestyle='--', markersize=3, color=colors[i])
 
     Handles.append((p1, p2))
@@ -274,18 +339,17 @@ for i in range(len(alpha_range)):
 # Plot vertical lines to indicate center of interface
 axes[0].vlines(4.75, -0.05, 1.05, linestyle='--', color='black', alpha=0.25)
 axes[1].vlines(4.75, 0, 2.1, linestyle='--', color='black', alpha=0.25)
-axes[2].vlines(4.75, 0, 1.1, linestyle='--', color='black', alpha=0.25)
+axes[2].vlines(4.75, 0, 2.1, linestyle='--', color='black', alpha=0.25)
 
 axes[0].set_ylim(-0.05, 1.05)
-axes[1].set_ylim(0, 2.1)
-axes[2].set_ylim(0, 1.1)
+axes[1].set_ylim(0, 2.15)
+axes[2].set_ylim(0, 2.15)
 
 # Construct the legend
 fig.legend(Handles, alpha_range, handler_map={tuple: HandlerTuple(
     ndivide=None)}, fontsize=9, loc=(0.750, 0.755), title=r'$\tilde{\alpha}$')
 
 # Put in some text
-plt.text(2.45, 2.05, 'Non-jamming')
-plt.text(2.45, 0.925, 'Jamming')
-
+plt.text(2.3, 4.0, 'Non-jamming',ha='center')
+plt.text(2.3, 1.8, 'Jamming',ha='center')
 
