@@ -18,7 +18,7 @@ plt.rcParams['figure.dpi'] = 300
 plt.style.use(['science','no-latex'])
 
 #Impor Path
-Path='<Path to Mean_Method Folder>'
+Path='<Path to Profiles_Variation_Boundary_Centred_Mobility Folder>'
 
 #Method that analyses the morphology (Find first moment of radially averaged power spectrum)
 def Analyse_Morphology(Image):
@@ -125,3 +125,4 @@ plt.legend()
 
 #Export Figure 
 #plt.savefig(Path+'\SizeProfiles_600dpi.png', dpi=600)
+
