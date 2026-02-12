@@ -2,7 +2,7 @@
 
 **Analysis_Mobility_Colloids**: Tracks the characteristic length during the formation of simulated 2D bijels (critical phase separation), using different values for the relative mobility of the colloids in the system. Requires [Profiles_Mobility_Variation_Colloids](../../Data/Profiles_Mobility_Variation_Colloids/) as input data. 
 
-**Analysis_Mobility_Cell_Boundary**: Tracks the characteristic length during the formation of simulated 2D bijels (critical phase separation), using different methods to calculate the boundary-centred mobility. Requires [Profiles_Mobility_Variation_Colloids](../../Data/Profiles_Mobility_Variation_Colloids/) as input data. 
+**Analysis_Mobility_Cell_Boundary**: Tracks the characteristic length during the formation of simulated 2D bijels (critical phase separation), using different methods to calculate the boundary-centred mobility. Requires [Profiles_Variation_Boundary_Centred_Mobility](../../Data/Profiles_Variation_Boundary_Centred_Mobility/) as input data. 
 
 **Morphological_Analysis_PickeringEmulsions**: Analyses the morphologies of simulated 2D Pickering emulsions during their formation (off-critical phase separation). It calculates profiles of the number of droplets, in addition to the average droplet diameter. Finally, it calculates the distributions of the droplet diameter in the system and visualises them as histograms. Requires ... as input data. 
 
