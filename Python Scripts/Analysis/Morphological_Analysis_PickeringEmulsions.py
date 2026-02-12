@@ -20,7 +20,7 @@ plt.rcParams['figure.dpi'] = 300
 plt.style.use(['science','no-latex'])
 
 #Import Path for data 
-Path_Folder='<Path to Pickering_Emulsions Folder>'
+Path_Folder='<Path to Profiles_Pickering_Emulsions Folder>'
 Path_Im=Path_Folder+'\psi0='
 
 #%% Analysis function for the droplet morphology 
@@ -269,3 +269,4 @@ Text_ys=[0.220,0.415,0.5975,0.7875][::-1]
 for i in range(len(Text_ys)):
 
     fig.text(0.70, Text_ys[i], r'$\tilde{t}=$'+str(int(t_range[T[i]])), va='center',color=color_cycle[i])
+
