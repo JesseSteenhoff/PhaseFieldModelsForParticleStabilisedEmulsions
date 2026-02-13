@@ -22,8 +22,8 @@ plt.rcParams['figure.dpi'] = 300
 plt.style.use(['science','no-latex'])
 
 #Import path 
-Path_Critical='<Path to Ostwald_Ripening_Critical Folder>'
-Path_OffCritical='<Path to Ostwald_Ripening_OffCritical Folder>'
+Path_Critical='<Path to Profiles_Coarsening_Critical Folder>'
+Path_OffCritical='<Path to Profiles_Coarsening_OffCritical Folder>'
 
 
 #%%Method that analyses the morphology (Find first moment of radially averaged power spectrum)
@@ -350,6 +350,7 @@ plt.loglog(t_cut_offcritical,Model(t_cut_offcritical,Beta_OffCritical_Average,Pr
 plt.text(650,13,r'$\beta='+str(np.round(Beta_OffCritical_Average,2))+'\pm '+str(np.round(Beta_OffCritical_Std,2))+'$',color=plt.gca().lines[-1].get_color(),rotation=20)
 
 plt.legend()
+
 
 
 
