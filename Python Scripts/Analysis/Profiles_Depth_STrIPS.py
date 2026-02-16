@@ -103,7 +103,7 @@ for psi in psi0:
 
     for i in range(N_morph):
         
-        Path=Path0+'\k=1.00\Morphology_Liquid_'+str(i)+'.npy'
+        Path=Path0+'\Morphology_Liquid_'+str(i)+'.npy'
         
         Morphology=np.load(Path)
         
