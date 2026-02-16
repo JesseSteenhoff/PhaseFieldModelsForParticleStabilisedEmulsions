@@ -96,7 +96,7 @@ Profiles_Std=[]
 #For each value of psi0, extract all depth profiles and the average profile
 for psi in psi0:
     
-    Path0='<Path to STrIPS_2D Folder>'+'\psi0='+str('{0:.2f}'.format(psi))
+    Path0='<Path to Profiles_Domains_STrIPS Folder>'+'\psi0='+str('{0:.2f}'.format(psi))
 
     #Pore size profiles for each value of psi 
     Ds=[]
@@ -381,3 +381,4 @@ for i in range(len(psi0)):
 #plt.legend(loc="upper left", bbox_to_anchor=(1.05, 1), borderaxespad=0.,title='$\psi_0$')
 plt.ylim(6.5,29)
 plt.legend(title='$\psi_0$',ncol=2,fontsize=8)
+
