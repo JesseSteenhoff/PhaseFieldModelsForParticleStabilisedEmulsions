@@ -20,7 +20,7 @@ plt.rcParams['figure.dpi'] = 300
 plt.style.use(['science','no-latex'])
 
 #Import Path for data 
-Path_Folder='<Path to Profiles_Pickering_Emulsions Folder>'
+Path_Folder='<Path to Profiles_Pickering_Emulsions Folder>' 
 Path_Im=Path_Folder+'\psi0='
 
 #%% Analysis function for the droplet morphology 
@@ -61,10 +61,6 @@ def Analyse_Morphology(Image):
 
 #%% Import and analyse the data 
 
-#Time-range
-t_sim=1000
-t_range=np.arange(t_sim/100,t_sim+t_sim/100,t_sim/100)
-
 #Initial nanoparticle concentrations 
 psi0_range=[0,0.05,0.10,0.20,0.30,0.40,0.50]
 
@@ -91,20 +87,30 @@ for psi0 in psi0_range:
         DS_av_list=[]
         
         #Import time-set of morphologies
-        for i in range(len(t_range)):
-            if psi0==0:
-                Morphology=np.genfromtxt(Path_Im+str(psi0)+'\Simulation'+str(n)+'\Morphology_Liquid_t'+str(int(t_range[i]))+'.txt')
-            else:
-                Morphology=np.genfromtxt(Path_Im+str('{:.2f}'.format(psi0))+'\Simulation'+str(n)+'\Morphology_Liquid_t'+str(int(t_range[i]))+'.txt')
+        if psi0==0:
+            Morphologies1=np.load(Path_Im+str(psi0)+'\Morphologies_Liquid_'+str(n)+'_Part1.npy')
+            Morphologies2=np.load(Path_Im+str(psi0)+'\Morphologies_Liquid_'+str(n)+'_Part2.npy')
+            Morphologies3=np.load(Path_Im+str(psi0)+'\Morphologies_Liquid_'+str(n)+'_Part3.npy')
             
-            NC,DS=Analyse_Morphology(Morphology)
+            Morphologies=np.concatenate((Morphologies1,Morphologies2,Morphologies3),axis=0)
+            
+        else:            
+            Morphologies1=np.load(Path_Im+str('{:.2f}'.format(psi0))+'\Morphologies_Liquid_'+str(n)+'_Part1.npy')
+            Morphologies2=np.load(Path_Im+str('{:.2f}'.format(psi0))+'\Morphologies_Liquid_'+str(n)+'_Part2.npy')
+            Morphologies3=np.load(Path_Im+str('{:.2f}'.format(psi0))+'\Morphologies_Liquid_'+str(n)+'_Part3.npy')
+            
+            Morphologies=np.concatenate((Morphologies1,Morphologies2,Morphologies3),axis=0)
+            
+        #Analyse each morphology over time 
+        for i in range(Morphologies.shape[0]):
+            NC,DS=Analyse_Morphology(Morphologies[i])
             NC_list.append(NC)
             DS_list.append(DS)
             if len(DS)==0:
                 DS_av_list.append(0)
             else:
                 DS_av_list.append(np.average(DS))
-                
+        
         NC_list_T.append(NC_list)
         DS_list_T.append(DS_list)
         DS_av_list_T.append(DS_av_list)
@@ -157,6 +163,10 @@ for i in range(len(psi0_range)):
 
 
 #%% Visualise the found results 
+
+#Time-range
+t_sim=1000
+t_range=np.arange(t_sim/100,t_sim+t_sim/100,t_sim/100)
 
 plt.figure()
 plt.minorticks_on()
@@ -269,4 +279,3 @@ Text_ys=[0.220,0.415,0.5975,0.7875][::-1]
 for i in range(len(Text_ys)):
 
     fig.text(0.70, Text_ys[i], r'$\tilde{t}=$'+str(int(t_range[T[i]])), va='center',color=color_cycle[i])
-
